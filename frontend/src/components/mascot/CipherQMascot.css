@@ -1,0 +1,73 @@
+/* CipherQMascot — scoped styles.
+   Deliberately kept in its own file (not appended to styles/globals.css)
+   so the mascot ships as a fully self-contained, additive unit with zero
+   risk of colliding with existing global rules, palette, or layout. */
+
+.cq-mascot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.cq-mascot svg {
+  display: block;
+  overflow: visible;
+}
+
+/* Eyelid rects sit over each eye and are scaled to 0 (invisible) by
+   default; the "blink" keyframe below briefly scales them to 1 to
+   momentarily cover the eye, then back down. */
+.cq-mascot-eyelid {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  transform: scaleY(0);
+}
+
+/* ACTIVE — calm/confident: slow, infrequent blink, steady glow. */
+.cq-mascot--active .cq-mascot-eyelid {
+  animation: cq-mascot-blink 6s ease-in-out infinite;
+}
+
+/* WARNING — alert/vigilant: subtle breathing pulse on the glow. */
+.cq-mascot--warning .cq-mascot-glow-group {
+  animation: cq-mascot-pulse-soft 1.9s ease-in-out infinite;
+}
+
+/* REAUTH REQUIRED — concerned/alert: a slightly faster, stronger pulse
+   than WARNING so the two states read as visually distinct. */
+.cq-mascot--reauth_required .cq-mascot-glow-group {
+  animation: cq-mascot-pulse-alert 1.15s ease-in-out infinite;
+}
+
+/* REVOKED — serious/protective: deliberately static. No blink, no
+   pulse — a still, watchful posture rather than a playful one. */
+.cq-mascot--revoked .cq-mascot-eyelid,
+.cq-mascot--revoked .cq-mascot-glow-group {
+  animation: none;
+}
+
+@keyframes cq-mascot-blink {
+  0%, 92%, 100% { transform: scaleY(0); }
+  96% { transform: scaleY(1); }
+}
+
+@keyframes cq-mascot-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.62; }
+}
+
+@keyframes cq-mascot-pulse-alert {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 2px currentColor); }
+  50% { opacity: 0.58; filter: drop-shadow(0 0 7px currentColor); }
+}
+
+/* Respect reduced-motion preferences: every mascot animation collapses
+   to a static frame, never removed content. */
+@media (prefers-reduced-motion: reduce) {
+  .cq-mascot,
+  .cq-mascot * {
+    animation: none !important;
+  }
+}

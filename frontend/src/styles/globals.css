@@ -1,0 +1,308 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   IBQC — Enterprise Design System
+   Hybrid surface theme: light application canvas (~65%) paired with a
+   deep-ink navigation shell and technical surfaces (~35%) — the balance
+   enterprise security products use to read as calm and trustworthy
+   rather than "dashboard demo".
+   ========================================================================== */
+
+/* ==========================================================================
+   CipherQ / Stitch parity layer.
+   The whole app now runs on the "Matte Obsidian" dark surface theme from
+   stitch_cipherq_enterprise_security_platform (see cipherq/DESIGN.md).
+   The legacy light --canvas/--panel variables above are kept only so any
+   not-yet-visited code path doesn't crash; every shipped page renders on
+   --cq-background now.
+   ========================================================================== */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.cq-app {
+  background: var(--cq-background, #11131c);
+  color: var(--cq-on-surface, #e2e1ef);
+  min-height: 100vh;
+}
+
+.cq-matte-obsidian {
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% -10%, rgba(46,91,255,0.14), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(0,244,254,0.07), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(160,58,211,0.06), transparent 60%);
+  background-attachment: fixed;
+}
+
+.cq-glass-sidebar {
+  backdrop-filter: blur(32px);
+  background: rgba(22, 28, 45, 0.7);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cq-no-scrollbar::-webkit-scrollbar { display: none; }
+.cq-no-scrollbar { scrollbar-width: none; }
+
+.cq-focusable:focus-visible,
+.cq-app input:focus-visible, .cq-app select:focus-visible, .cq-app textarea:focus-visible, .cq-app button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(184,195,255,0.18), 0 0 0 1px #b8c3ff;
+}
+
+:root {
+  --canvas: #f4f5f8;
+  --canvas-soft: #eceef3;
+  --panel: #ffffff;
+  --panel-2: #fbfbfd;
+  --border: rgba(15,20,32,0.08);
+  --border-soft: rgba(15,20,32,0.05);
+
+  --ink: #0b0f19;
+  --ink-800: #131a2b;
+  --ink-700: #1b2338;
+  --ink-600: #262f47;
+  --ink-border: rgba(255,255,255,0.08);
+
+  --brand: #4d55e0;
+  --brand-d: #3a3fc4;
+  --brand-lt: #eef1ff;
+  --quantum: #7c5cff;
+  --quantum-lt: #efeaff;
+  --mint: #0ea678;
+  --mint-lt: #e3f8ef;
+  --peach: #e8672a;
+  --peach-lt: #fdece0;
+  --rose: #e0234f;
+  --rose-lt: #fde8ee;
+  --sky: #0f8fd6;
+  --sky-lt: #e5f4fc;
+  --amber: #b9760b;
+  --amber-lt: #fbf0dc;
+
+  --text: #10131c;
+  --text-2: #4b5266;
+  --text-3: #8a90a3;
+  --text-inv: #f4f5fa;
+  --text-inv-2: #a4aac2;
+
+  --sh-sm: 0 1px 2px rgba(15,20,32,.05), 0 1px 4px rgba(15,20,32,.04);
+  --sh: 0 2px 8px rgba(15,20,32,.06), 0 1px 3px rgba(15,20,32,.05);
+  --sh-lg: 0 8px 24px -12px rgba(15,20,32,.16), 0 2px 8px rgba(15,20,32,.05);
+  --sh-xl: 0 24px 48px -20px rgba(15,20,32,.22), 0 4px 12px rgba(15,20,32,.06);
+
+  --font: 'Inter', system-ui, sans-serif;
+  --font-display: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  --r-sm: 8px; --r: 12px; --r-lg: 16px; --r-xl: 22px; --r-2xl: 28px;
+  --sidebar-w: 264px;
+  --sidebar-w-collapsed: 76px;
+  --topbar-h: 64px;
+
+  /* ------------------------------------------------------------------
+     CipherQ tokens (from Stitch export). Prefixed --cq-* so they sit
+     alongside the existing light-canvas variables above without
+     overriding anything. Consumed by new shared primitives
+     (GlassPanel, BentoCard, WorkflowBreadcrumb) and, in later modules,
+     by individual pages as they're migrated to the CipherQ look.
+     ------------------------------------------------------------------ */
+  --cq-surface: #11131c;
+  --cq-surface-container-lowest: #0c0e17;
+  --cq-surface-container-low: #191b24;
+  --cq-surface-container: #1d1f29;
+  --cq-surface-container-high: #282933;
+  --cq-surface-container-highest: #33343e;
+  --cq-on-surface: #e2e1ef;
+  --cq-on-surface-variant: #c4c5d9;
+  --cq-outline: #8e90a2;
+  --cq-outline-variant: #434656;
+  --cq-primary: #b8c3ff;
+  --cq-on-primary: #002388;
+  --cq-primary-container: #2e5bff;
+  --cq-secondary: #e6feff;
+  --cq-secondary-container: #00f4fe;
+  --cq-tertiary: #e9b3ff;
+  --cq-tertiary-container: #a03ad3;
+  --cq-error: #ffb4ab;
+  --cq-error-container: #93000a;
+}
+
+*,*::before,*::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--cq-background);
+  color: var(--cq-on-surface);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.01em; }
+code, pre, .mono { font-family: var(--mono); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(15,20,32,0.16); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(15,20,32,0.28); }
+
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
+.grad {
+  background: linear-gradient(100deg, var(--brand), var(--quantum) 65%, var(--sky));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.grad-warm {
+  background: linear-gradient(100deg, var(--peach), var(--rose));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Focus ring, accessible + subtle */
+.focusable:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(77,85,224,0.25), 0 0 0 1px var(--brand);
+}
+
+/* Utility: glassy panel used across cards on dark surfaces */
+.glass-dark {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid var(--ink-border);
+  backdrop-filter: blur(16px);
+}
+
+/* CipherQ glass surface — used by GlassPanel / BentoCard primitives,
+   and by the sidebar/topbar once those are migrated in a later module. */
+.cq-glass {
+  background: rgba(22, 28, 45, 0.7);
+  backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* Slightly more opaque than .cq-glass: the sidebar/topbar sit over the
+   still-light content canvas (pages are migrated to the dark surface
+   one at a time), so a heavier base keeps the chrome reading as dark
+   glass rather than picking up a hazy tint from what's behind it. */
+.cq-glass-chrome {
+  background: rgba(17, 19, 28, 0.92);
+  backdrop-filter: blur(20px);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.cq-dot-glow {
+  box-shadow: 0 0 8px currentColor;
+}
+
+@media (max-width: 860px) {
+  :root { --sidebar-w: 82vw; }
+}
+
+/* ==========================================================================
+   Quantum visual system — shared across QuantumField, RiskCore,
+   SecurityFieldGraph and Qira. Kept centralized so every "living"
+   surface in the product moves at the same calibrated speed rather
+   than each component inventing its own timing.
+   ========================================================================== */
+
+.cq-qfield-particle {
+  animation-name: cq-qfield-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+@keyframes cq-qfield-drift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+  50% { transform: translate(var(--cqf-orbit), calc(var(--cqf-orbit) * -0.6)) scale(1.15); opacity: 0.9; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+}
+.cq-qfield-lines { animation: cq-qfield-fade 8s ease-in-out infinite; }
+@keyframes cq-qfield-fade {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+
+/* Slow ambient rotation for risk rings / orbital accents */
+@keyframes cq-orbit-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes cq-orbit-slow-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+.cq-orbit-cw { animation: cq-orbit-slow 60s linear infinite; transform-origin: 50% 50%; }
+.cq-orbit-ccw { animation: cq-orbit-slow-reverse 90s linear infinite; transform-origin: 50% 50%; }
+
+/* Pulse used for "live"/telemetry dots — steadier and softer than the
+   default Tailwind animate-pulse so it reads as calm monitoring, not
+   an alert. */
+@keyframes cq-telemetry-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.cq-telemetry-dot { animation: cq-telemetry-pulse 2.4s ease-in-out infinite; }
+
+/* Draw-in for SVG path/line telemetry traces */
+@keyframes cq-draw-in {
+  from { stroke-dashoffset: var(--cq-dash, 300); }
+  to { stroke-dashoffset: 0; }
+}
+.cq-draw-in {
+  stroke-dasharray: var(--cq-dash, 300);
+  stroke-dashoffset: var(--cq-dash, 300);
+  animation: cq-draw-in 1.1s ease-out forwards;
+}
+
+/* Particle travelling along a connection line (security graph, BB84 channel) */
+@keyframes cq-travel {
+  0% { offset-distance: 0%; opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+.cq-travel-particle {
+  offset-rotate: 0deg;
+  animation: cq-travel linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-qfield-particle,
+  .cq-qfield-lines,
+  .cq-orbit-cw,
+  .cq-orbit-ccw,
+  .cq-telemetry-dot,
+  .cq-draw-in,
+  .cq-travel-particle {
+    animation: none !important;
+  }
+}
+
+/* Compact density mode, toggled from Settings */
+html.density-compact .p-6 { padding: 1.1rem !important; }
+html.density-compact .sm\:p-7 { padding: 1.1rem !important; }
+html.density-compact .py-7 { padding-top: 1.1rem !important; padding-bottom: 1.1rem !important; }
+html.density-compact .mb-6 { margin-bottom: 1rem !important; }
+html.density-compact .mb-7 { margin-bottom: 1.1rem !important; }
+html.density-compact .gap-5 { gap: 0.85rem !important; }

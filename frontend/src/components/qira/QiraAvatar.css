@@ -1,0 +1,127 @@
+/* QiraAvatar — scoped styles, self-contained like CipherQMascot.css. */
+
+.qira-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+.qira-body { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* ---- gentle idle float ---- */
+.qira-float { transform-box: fill-box; transform-origin: 50% 50%; }
+.qira--active .qira-float,
+.qira--idle .qira-float,
+.qira--scanning .qira-float {
+  animation: qira-bob 4.2s ease-in-out infinite;
+}
+.qira--warning .qira-float { animation: qira-bob 2.6s ease-in-out infinite, qira-tilt 2.6s ease-in-out infinite; }
+.qira--critical .qira-float { animation: none; }
+
+@keyframes qira-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+@keyframes qira-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(1.5deg); }
+}
+
+/* ---- blink ---- */
+.qira-eyelid { transform-box: fill-box; transform-origin: 50% 0%; transform: scaleY(0); }
+.qira--active .qira-eyelid,
+.qira--idle .qira-eyelid {
+  animation: qira-blink 5.5s ease-in-out infinite;
+}
+.qira--scanning .qira-eyelid { animation: qira-blink 3.2s ease-in-out infinite; }
+.qira--warning .qira-eyelid { animation: qira-blink 2.4s ease-in-out infinite; }
+.qira--critical .qira-eyelid { animation: none; transform: scaleY(0); }
+
+@keyframes qira-blink {
+  0%, 90%, 100% { transform: scaleY(0); }
+  95% { transform: scaleY(1); }
+}
+
+/* ---- core pulse (chest emblem) ---- */
+.qira-core-pulse { transform-box: fill-box; transform-origin: 50% 50%; }
+.qira--active .qira-core-pulse,
+.qira--idle .qira-core-pulse { animation: qira-core-soft 3.6s ease-in-out infinite; }
+.qira--scanning .qira-core-pulse { animation: qira-core-soft 1.4s ease-in-out infinite; }
+.qira--warning .qira-core-pulse { animation: qira-core-alert 1.1s ease-in-out infinite; }
+.qira--critical .qira-core-pulse { animation: qira-core-alert 0.7s ease-in-out infinite; }
+
+@keyframes qira-core-soft {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+@keyframes qira-core-alert {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+/* ---- ambient aura ring + particles ---- */
+.qira-aura-ring {
+  position: absolute;
+  inset: -18%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, var(--qira-aura-soft) 0%, transparent 70%);
+  pointer-events: none;
+}
+.qira--active .qira-aura-ring,
+.qira--idle .qira-aura-ring { animation: qira-aura-breathe 4.5s ease-in-out infinite; }
+.qira--scanning .qira-aura-ring { animation: qira-aura-breathe 1.6s ease-in-out infinite; }
+.qira--warning .qira-aura-ring { animation: qira-aura-breathe 1.3s ease-in-out infinite; }
+.qira--critical .qira-aura-ring { animation: qira-aura-breathe 0.9s ease-in-out infinite; opacity: 0.9; }
+
+@keyframes qira-aura-breathe {
+  0%, 100% { opacity: 0.5; transform: scale(0.96); }
+  50% { opacity: 0.95; transform: scale(1.06); }
+}
+
+.qira-aura-particle {
+  position: absolute;
+  width: 5%;
+  height: 5%;
+  border-radius: 9999px;
+  background: var(--qira-aura);
+  box-shadow: 0 0 6px var(--qira-aura);
+  pointer-events: none;
+  opacity: 0.75;
+  transform-box: fill-box;
+}
+.qira-aura-particle--1 { top: 8%; left: 50%; animation: qira-orbit-1 7s linear infinite; }
+.qira-aura-particle--2 { top: 50%; left: 92%; animation: qira-orbit-2 9.5s linear infinite; }
+.qira-aura-particle--3 { top: 85%; left: 15%; animation: qira-orbit-3 11s linear infinite; }
+
+@keyframes qira-orbit-1 {
+  from { transform: rotate(0deg) translateX(46%) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(46%) rotate(-360deg); }
+}
+@keyframes qira-orbit-2 {
+  from { transform: rotate(0deg) translateX(40%) rotate(0deg); }
+  to { transform: rotate(-360deg) translateX(40%) rotate(360deg); }
+}
+@keyframes qira-orbit-3 {
+  from { transform: rotate(0deg) translateX(50%) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(50%) rotate(-360deg); }
+}
+
+/* ---- scanning sweep overlay ---- */
+.qira-scan-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.qira-scan-sweep {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: qira-sweep 1.8s linear infinite;
+}
+@keyframes qira-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qira-avatar, .qira-avatar * {
+    animation: none !important;
+  }
+}
