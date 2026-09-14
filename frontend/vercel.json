@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://cipherq-p8bn.onrender.com/api/:path*"
+    }
+  ]
+}
