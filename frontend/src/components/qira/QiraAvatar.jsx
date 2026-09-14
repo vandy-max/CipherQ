@@ -9,13 +9,15 @@ import "./QiraAvatar.css";
  * SAME authoritative source every other surface uses
  * (deriveMonitoringState() / the shared Qira decision object).
  *
- * States (shared vocabulary with monitoringState.js + CipherQMascot):
- *   "active"           -> calm idle, slow blink, gentle float
- *   "warning"          -> alert: amber aura, faster pulse, slight tilt
- *   "reauth_required"  -> same visual treatment as warning
- *   "revoked"          -> critical: red aura, focused/narrowed eyes, still
- *   "scanning"         -> active monitoring sweep (assessing/loading)
- *   "off" / undefined  -> calm neutral default, no security claim
+ * Authoritative Qira states:
+ *   "SECURE"           -> blue/cyan, active/healthy
+ *   "SECURITY_WARNING" -> orange/yellow, warning
+ *   "COMPROMISED"      -> red, critical/angry
+ *   "scanning"         -> assessment in progress
+ *
+ * Legacy callers may still pass the old visual aliases; they are normalized
+ * to the authoritative Qira vocabulary below and do not create new security
+ * states.
  *
  * Props:
  *  - state: one of the above
@@ -26,16 +28,26 @@ import "./QiraAvatar.css";
  *  - className
  */
 const STATE_META = {
-  active: { aura: "#63f7ff", auraSoft: "rgba(99,247,255,0.28)", cls: "qira--active" },
+  SECURE: { aura: "#63f7ff", auraSoft: "rgba(99,247,255,0.28)", cls: "qira--secure" },
   scanning: { aura: "#63f7ff", auraSoft: "rgba(99,247,255,0.35)", cls: "qira--scanning" },
-  warning: { aura: "#f59e0b", auraSoft: "rgba(245,158,11,0.32)", cls: "qira--warning" },
-  reauth_required: { aura: "#f59e0b", auraSoft: "rgba(245,158,11,0.32)", cls: "qira--warning" },
-  revoked: { aura: "#ff6b6b", auraSoft: "rgba(255,107,107,0.32)", cls: "qira--critical" },
-  off: { aura: "#8e90a2", auraSoft: "rgba(142,144,162,0.18)", cls: "qira--idle" },
+  SECURITY_WARNING: { aura: "#f59e0b", auraSoft: "rgba(245,158,11,0.32)", cls: "qira--warning" },
+  COMPROMISED: { aura: "#ff6b6b", auraSoft: "rgba(255,107,107,0.32)", cls: "qira--critical" },
+  neutral: { aura: "#8e90a2", auraSoft: "rgba(142,144,162,0.18)", cls: "qira--idle" },
 };
 
-export default function QiraAvatar({ state = "off", size = 64, trackCursor = true, className = "" }) {
-  const meta = STATE_META[state] || STATE_META.off;
+function normalizeQiraState(state) {
+  if (state === "SECURE" || state === "active") return "SECURE";
+  if (state === "SECURITY_WARNING" || state === "warning" || state === "reauth_required") {
+    return "SECURITY_WARNING";
+  }
+  if (state === "COMPROMISED" || state === "revoked") return "COMPROMISED";
+  if (state === "scanning") return "scanning";
+  return "neutral";
+}
+
+export default function QiraAvatar({ state, size = 64, trackCursor = true, className = "" }) {
+  const qiraState = normalizeQiraState(state);
+  const meta = STATE_META[qiraState];
   const rootRef = useRef(null);
   const [pupil, setPupil] = useState({ x: 0, y: 0 });
 
@@ -62,7 +74,7 @@ export default function QiraAvatar({ state = "off", size = 64, trackCursor = tru
     return () => window.removeEventListener("pointermove", handleMove);
   }, [trackCursor]);
 
-  const isCritical = state === "revoked";
+  const isCritical = qiraState === "COMPROMISED";
 
   return (
     <span
@@ -156,7 +168,7 @@ export default function QiraAvatar({ state = "off", size = 64, trackCursor = tru
       </svg>
 
       {/* scanning sweep overlay */}
-      {state === "scanning" && (
+      {qiraState === "scanning" && (
         <svg viewBox="0 0 100 100" className="qira-scan-overlay" aria-hidden="true">
           <circle cx="50" cy="50" r="46" fill="none" stroke="var(--qira-aura)" strokeOpacity="0.25" strokeWidth="1" />
           <line x1="50" y1="50" x2="50" y2="6" stroke="var(--qira-aura)" strokeWidth="1.2" strokeOpacity="0.8" className="qira-scan-sweep" />

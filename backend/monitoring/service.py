@@ -121,6 +121,21 @@ class MonitoringSessionRecord:
     # Heartbeats advance it; read-only refreshes reuse it. This lets clients
     # reject stale GET responses that arrive after a newer heartbeat.
     snapshot_revision: int = 0
+    # Compact session-level aggregates. These replace per-heartbeat
+    # monitoring_events writes while retaining the useful information needed
+    # for a final session summary.
+    check_count: int = 0
+    successful_face_verifications: int = 0
+    face_liveness_failures: int = 0
+    warning_occurrences: int = 0
+    recovery_count: int = 0
+    camera_interruptions: int = 0
+    highest_security_state: str = "SECURE"
+    last_security_state: str = "SECURE"
+    final_security_state: str | None = None
+    overall_security_outcome: str | None = None
+    ended_at: datetime | None = None
+    duration_seconds: float | None = None
 
 
 @dataclass(frozen=True)
@@ -310,7 +325,7 @@ class MonitoringService:
             now=now,
             camera_available=True,
         )
-        self._persist_latest_evidence(record, snapshot)
+        self._persist_latest_evidence(record, snapshot, count_check=True)
         self._repository.append_event(
             MonitoringEvent(record.monitoring_session_id, "started", snapshot)
         )
@@ -359,10 +374,7 @@ class MonitoringService:
             camera_available=camera_available,
             now=now,
         )
-        self._persist_latest_evidence(record, snapshot)
-        self._repository.append_event(
-            MonitoringEvent(monitoring_session_id, "heartbeat", snapshot)
-        )
+        self._persist_latest_evidence(record, snapshot, count_check=True)
         self._maybe_audit_transition(record, snapshot, now)
         return snapshot
 
@@ -393,13 +405,31 @@ class MonitoringService:
         if record is None:
             raise MonitoringSessionNotFoundError(monitoring_session_id)
         now = now or datetime.now(timezone.utc)
+        # Capture the final authoritative state before marking the session
+        # stopped. No synthetic biometric check is added to the summary.
+        snapshot = self._evaluate(
+            record,
+            face_present=record.last_face_present,
+            face_confidence=record.last_face_match_confidence,
+            liveness=record.last_liveness,
+            expression_hint=record.last_expression_hint,
+            failure_this_tick=False,
+            persist_failure_counter=False,
+            camera_available=record.last_camera_available,
+            now=now,
+        )
         record.stopped = True
+        record.ended_at = now
+        record.final_security_state = snapshot.security_state.value
+        record.overall_security_outcome = (
+            "COMPROMISED"
+            if snapshot.security_state.value == "COMPROMISED"
+            else "SECURE" if snapshot.security_state.value == "SECURE"
+            else "SECURITY_WARNING"
+        )
+        record.duration_seconds = max(0.0, (now - record.started_at).total_seconds())
         record.updated_at = now
         self._repository.update(record)
-        snapshot = self._evaluate(
-            record, face_present=True, face_confidence=None, liveness=True,
-            expression_hint=None, failure_this_tick=False, persist_failure_counter=False, now=now,
-        )
         self._repository.append_event(MonitoringEvent(monitoring_session_id, "stopped", snapshot))
         if self._audit is not None:
             self._audit.record(
@@ -438,8 +468,46 @@ class MonitoringService:
         self._maybe_audit_transition(record, snapshot, now)
         return snapshot
 
-    def _persist_latest_evidence(self, record: MonitoringSessionRecord, snapshot: MonitoringSnapshot) -> None:
-        """Persist the last REAL monitoring tick for read-only/admin consumers."""
+    def _persist_latest_evidence(
+        self,
+        record: MonitoringSessionRecord,
+        snapshot: MonitoringSnapshot,
+        *,
+        count_check: bool = False,
+    ) -> None:
+        """Persist latest real telemetry plus compact session aggregates."""
+        previous_security_state = record.last_security_state
+        current_security_state = snapshot.security_state.value
+
+        if count_check:
+            record.check_count += 1
+            if (
+                snapshot.identity_state is IdentityCheckState.IDENTITY_CONFIRMED
+                and snapshot.liveness
+                and snapshot.face_present
+                and (
+                    snapshot.face_match_confidence is None
+                    or snapshot.face_match_confidence >= IDENTITY_MATCH_THRESHOLD
+                )
+            ):
+                record.successful_face_verifications += 1
+            else:
+                record.face_liveness_failures += 1
+
+            if snapshot.identity_state is IdentityCheckState.CAMERA_UNAVAILABLE:
+                record.camera_interruptions += 1
+
+            if current_security_state == "SECURITY_WARNING" and previous_security_state != "SECURITY_WARNING":
+                record.warning_occurrences += 1
+            if current_security_state == "SECURE" and previous_security_state == "SECURITY_WARNING":
+                record.recovery_count += 1
+
+            rank = {"SECURE": 0, "SECURITY_WARNING": 1, "COMPROMISED": 2}
+            if rank.get(current_security_state, 0) > rank.get(record.highest_security_state, 0):
+                record.highest_security_state = current_security_state
+
+            record.last_security_state = current_security_state
+
         record.last_face_present = snapshot.face_present
         record.last_face_match_confidence = snapshot.face_match_confidence
         record.last_liveness = snapshot.liveness

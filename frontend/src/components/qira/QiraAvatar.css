@@ -12,7 +12,7 @@
 
 /* ---- gentle idle float ---- */
 .qira-float { transform-box: fill-box; transform-origin: 50% 50%; }
-.qira--active .qira-float,
+.qira--secure .qira-float,
 .qira--idle .qira-float,
 .qira--scanning .qira-float {
   animation: qira-bob 4.2s ease-in-out infinite;
@@ -31,7 +31,7 @@
 
 /* ---- blink ---- */
 .qira-eyelid { transform-box: fill-box; transform-origin: 50% 0%; transform: scaleY(0); }
-.qira--active .qira-eyelid,
+.qira--secure .qira-eyelid,
 .qira--idle .qira-eyelid {
   animation: qira-blink 5.5s ease-in-out infinite;
 }
@@ -46,7 +46,7 @@
 
 /* ---- core pulse (chest emblem) ---- */
 .qira-core-pulse { transform-box: fill-box; transform-origin: 50% 50%; }
-.qira--active .qira-core-pulse,
+.qira--secure .qira-core-pulse,
 .qira--idle .qira-core-pulse { animation: qira-core-soft 3.6s ease-in-out infinite; }
 .qira--scanning .qira-core-pulse { animation: qira-core-soft 1.4s ease-in-out infinite; }
 .qira--warning .qira-core-pulse { animation: qira-core-alert 1.1s ease-in-out infinite; }
@@ -69,7 +69,7 @@
   background: radial-gradient(circle, var(--qira-aura-soft) 0%, transparent 70%);
   pointer-events: none;
 }
-.qira--active .qira-aura-ring,
+.qira--secure .qira-aura-ring,
 .qira--idle .qira-aura-ring { animation: qira-aura-breathe 4.5s ease-in-out infinite; }
 .qira--scanning .qira-aura-ring { animation: qira-aura-breathe 1.6s ease-in-out infinite; }
 .qira--warning .qira-aura-ring { animation: qira-aura-breathe 1.3s ease-in-out infinite; }

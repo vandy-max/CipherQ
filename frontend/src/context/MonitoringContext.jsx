@@ -27,7 +27,7 @@ const PENDING_CONFIDENCE_KEY = "ibqc_pending_monitoring_face_confidence";
 // rather than on every webcam frame, to avoid burning CPU/GPU and to
 // avoid generating an unbounded number of /face/verify + audit
 // entries. Override via VITE_MONITORING_INTERVAL_MS at build time.
-const MONITORING_INTERVAL_MS = Number(import.meta.env?.VITE_MONITORING_INTERVAL_MS) || 5000;
+const MONITORING_INTERVAL_MS = Number(import.meta.env?.VITE_MONITORING_INTERVAL_MS) || 2500;
 
 // A heartbeat request must fail this many times in a row before the
 // UI stops trusting the last-known ACTIVE status and shows

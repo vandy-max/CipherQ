@@ -610,6 +610,18 @@ def _to_monitoring_record(doc: dict) -> MonitoringSessionRecord:
         last_reason_code=doc.get("last_reason_code"),
         last_reason=doc.get("last_reason"),
         snapshot_revision=doc.get("snapshot_revision", 0),
+        check_count=doc.get("check_count", 0),
+        successful_face_verifications=doc.get("successful_face_verifications", 0),
+        face_liveness_failures=doc.get("face_liveness_failures", 0),
+        warning_occurrences=doc.get("warning_occurrences", 0),
+        recovery_count=doc.get("recovery_count", 0),
+        camera_interruptions=doc.get("camera_interruptions", 0),
+        highest_security_state=doc.get("highest_security_state", "SECURE"),
+        last_security_state=doc.get("last_security_state", "SECURE"),
+        final_security_state=doc.get("final_security_state"),
+        overall_security_outcome=doc.get("overall_security_outcome"),
+        ended_at=doc.get("ended_at"),
+        duration_seconds=doc.get("duration_seconds"),
     )
 
 
@@ -646,6 +658,18 @@ class MongoMonitoringRepository:
             "last_reason_code": None,
             "last_reason": None,
             "snapshot_revision": 0,
+            "check_count": 0,
+            "successful_face_verifications": 0,
+            "face_liveness_failures": 0,
+            "warning_occurrences": 0,
+            "recovery_count": 0,
+            "camera_interruptions": 0,
+            "highest_security_state": "SECURE",
+            "last_security_state": "SECURE",
+            "final_security_state": None,
+            "overall_security_outcome": None,
+            "ended_at": None,
+            "duration_seconds": None,
         }
         self._db[MONITORING_SESSIONS_COLLECTION].insert_one(doc)
         return _to_monitoring_record(doc)
@@ -676,6 +700,18 @@ class MongoMonitoringRepository:
                     "last_reason_code": record.last_reason_code,
                     "last_reason": record.last_reason,
                     "snapshot_revision": record.snapshot_revision,
+                    "check_count": record.check_count,
+                    "successful_face_verifications": record.successful_face_verifications,
+                    "face_liveness_failures": record.face_liveness_failures,
+                    "warning_occurrences": record.warning_occurrences,
+                    "recovery_count": record.recovery_count,
+                    "camera_interruptions": record.camera_interruptions,
+                    "highest_security_state": record.highest_security_state,
+                    "last_security_state": record.last_security_state,
+                    "final_security_state": record.final_security_state,
+                    "overall_security_outcome": record.overall_security_outcome,
+                    "ended_at": record.ended_at,
+                    "duration_seconds": record.duration_seconds,
                 }
             },
         )

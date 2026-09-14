@@ -146,7 +146,15 @@ export default function VisualizationPage() {
   // IMPORTANT: only the backend QiraDecision determines the Qira verdict.
   // snapshot.security_state is the monitoring posture and is intentionally
   // not used as a substitute for the Qira decision.
-  const stateKey = decision?.security_state;
+  // While Qira is assessing, the latest monitoring snapshot is the
+  // authoritative live security state. Showing that state immediately
+  // prevents the risk-analysis card from visually lagging behind a
+  // recovered WARNING -> SECURE (or any other) monitoring transition.
+  // Once the assessment completes, the backend Qira decision becomes the
+  // displayed verdict again. No frontend state is invented here.
+  const stateKey = assessing
+    ? snapshot?.security_state || decision?.security_state
+    : decision?.security_state || snapshot?.security_state;
   const meta = STATE_META[stateKey] || null;
   // Mascot status vocabulary mirrors monitoringState.js's four states;
   // translate the Qira-specific SECURE/SECURITY_WARNING/COMPROMISED
@@ -247,7 +255,7 @@ export default function VisualizationPage() {
           {/* QIRA summary */}
           <div className="bg-cq-surface-container rounded-cq-xl p-cq-stack-lg flex flex-col items-center text-center sticky top-4">
             <QiraAvatar
-              state={stateKey === "SECURE" ? "active" : stateKey === "SECURITY_WARNING" ? "warning" : stateKey === "COMPROMISED" ? "revoked" : assessing ? "scanning" : "off"}
+              state={assessing ? "scanning" : stateKey}
               size={96}
               trackCursor={false}
             />

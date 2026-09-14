@@ -34,49 +34,80 @@ export function QiraProvider({ children }) {
   const [error, setError] = useState("");
 
   const lastKeyRef = useRef(null);
+  const latestKeyRef = useRef(null);
+  const pendingKeyRef = useRef(null);
+  const lastAssessedKeyRef = useRef(null);
   const inFlightRef = useRef(false);
   const inFlightSessionRef = useRef(null);
   const assessmentGenerationRef = useRef(0);
 
-  const refresh = useCallback(async () => {
-    if (!monitoringSessionId) return;
+  const refresh = useCallback(async (requestedKey = latestKeyRef.current) => {
+    if (!monitoringSessionId || !requestedKey) return;
+
+    // Never lose a newer monitoring state just because an older Qira
+    // assessment is still running. Keep only the newest pending key; when
+    // the current request finishes, that key is assessed next.
+    if (inFlightRef.current && inFlightSessionRef.current === monitoringSessionId) {
+      pendingKeyRef.current = requestedKey;
+      return;
+    }
+
+    if (requestedKey === lastAssessedKeyRef.current) return;
+
     const generation = assessmentGenerationRef.current;
     const requestedSession = monitoringSessionId;
-    // Do not duplicate an assessment for the same session, but do allow a
-    // fresh session to start its own assessment while an old-session
-    // request is still finishing.
-    if (inFlightRef.current && inFlightSessionRef.current === requestedSession) return;
     inFlightRef.current = true;
     inFlightSessionRef.current = requestedSession;
     setAssessing(true);
     setError("");
+
     try {
       const result = await assessSecurity(requestedSession);
-      // A slow assessment from an older monitoring session must never
-      // overwrite the decision for the new session after reauthentication.
-      if (generation === assessmentGenerationRef.current) {
+      // A response is accepted only if it belongs to the current monitoring
+      // session generation. The key is recorded only after the response is
+      // accepted, so a newer pending state can never be hidden by an older
+      // assessment response.
+      const isCurrentAssessment =
+        generation === assessmentGenerationRef.current &&
+        requestedSession === monitoringSessionId;
+      const isLatestRequestedState = requestedKey === latestKeyRef.current;
+
+      if (isCurrentAssessment && isLatestRequestedState) {
         setDecision(result);
+        lastAssessedKeyRef.current = requestedKey;
       }
     } catch (err) {
-      if (generation === assessmentGenerationRef.current) {
+      if (
+        generation === assessmentGenerationRef.current &&
+        requestedSession === monitoringSessionId &&
+        requestedKey === latestKeyRef.current
+      ) {
         setError(err.message || "Qira assessment failed");
       }
     } finally {
-      if (generation === assessmentGenerationRef.current) setAssessing(false);
       if (inFlightSessionRef.current === requestedSession) {
         inFlightRef.current = false;
         inFlightSessionRef.current = null;
       }
+
+      if (generation === assessmentGenerationRef.current && requestedSession === monitoringSessionId) {
+        setAssessing(false);
+        // Always prefer the latest state observed by the monitoring
+        // context. The pending ref is only a compatibility queue for
+        // changes observed while the request was in flight. This closes
+        // the WARNING -> SECURE race where an older response could be
+        // accepted after the monitoring snapshot had already recovered.
+        const pendingKey = latestKeyRef.current || pendingKeyRef.current;
+        pendingKeyRef.current = null;
+        if (pendingKey && pendingKey !== lastAssessedKeyRef.current) {
+          // Start the newest queued assessment after the current promise has
+          // fully released the in-flight guard. This is intentionally one
+          // follow-up request, not a polling loop.
+          queueMicrotask(() => refresh(pendingKey));
+        }
+      }
     }
   }, [monitoringSessionId]);
-
-  useEffect(() => {
-    if (!monitoringSessionId || !snapshot) return;
-    const key = significantKey(snapshot);
-    if (key === lastKeyRef.current) return;
-    lastKeyRef.current = key;
-    refresh();
-  }, [monitoringSessionId, snapshot, refresh]);
 
   // Reset shared state when the monitoring session itself changes
   // (e.g. after reauthentication starts a fresh session) so a stale
@@ -84,10 +115,22 @@ export function QiraProvider({ children }) {
   useEffect(() => {
     assessmentGenerationRef.current += 1;
     lastKeyRef.current = null;
+    latestKeyRef.current = null;
+    pendingKeyRef.current = null;
+    lastAssessedKeyRef.current = null;
     setDecision(null);
     setError("");
     setAssessing(false);
   }, [monitoringSessionId]);
+
+  useEffect(() => {
+    if (!monitoringSessionId || !snapshot) return;
+    const key = significantKey(snapshot);
+    latestKeyRef.current = key;
+    if (key === lastKeyRef.current) return;
+    lastKeyRef.current = key;
+    refresh(key);
+  }, [monitoringSessionId, snapshot, refresh]);
 
   const ask = useCallback(
     async (question) => {
